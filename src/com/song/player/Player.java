@@ -15,7 +15,6 @@ public class Player extends GenericPlayer {
         takeACard(newCard);
         if (getPoint() > 21) {
             setState(ActionState.DONE);
-            setBusted(true);
         }
     }
 

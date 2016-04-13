@@ -17,7 +17,6 @@ public class Dealer extends GenericPlayer {
         }
         if (getPoint() > 21) {
             setState(ActionState.DONE);
-            setBusted(true);
         }
     }
 

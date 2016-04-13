@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.song.util.Randomizer;
 
-public class CardDeck {
+public class CardDeck implements CardDispatchable {
     private List<Card> deck;
     private int numberOfCards;
 
@@ -55,5 +55,19 @@ public class CardDeck {
 
     public int numberOfCardsInDeck() {
         return numberOfCards;
+    }
+
+    @Override
+    public Card dispatch() {
+        Card newCard = new Card();
+        if (!isDeckEmpty()) {
+            newCard = getRandomCard();
+        }
+        return newCard;
+    }
+
+    @Override
+    public boolean hasEnoughCards(int minimumCardNumber) {
+        return numberOfCardsInDeck() >= minimumCardNumber;
     }
 }

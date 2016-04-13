@@ -6,18 +6,17 @@ import java.util.Observable;
 
 import com.song.card.CardDeck;
 import com.song.card.CardDispatchable;
-import com.song.card.CardDispatcher;
 import com.song.player.Dealer;
-import com.song.player.GenericPlayer;
+import com.song.player.Playable;
 import com.song.player.Player;
 import com.song.util.DisplayInformation;
 
 public class GameSystem extends Observable {
 
     private static GameSystem instance;
-    private List<GenericPlayer> players;
+    private List<Playable> players;
     private CardDispatchable cardDispatcher;
-    private GenericPlayer dealer;
+    private Playable dealer;
 
     private GameSystem(GameSystemBuilder gsb) {
         players = gsb.players;
@@ -32,21 +31,21 @@ public class GameSystem extends Observable {
         return instance;
     }
 
-    public static class GameSystemBuilder implements GameBuilder, PlayerBuilder, CardBuilder, SystemBuilder {
-        private GenericPlayer dealer;
-        private List<GenericPlayer> players;
-        private CardDeck cardDeck;
+    public static class GameSystemBuilder implements GameBuilder, PlayerBuilder, SystemBuilder {
+        private Playable dealer;
+        private List<Playable> players;
         private CardDispatchable cardDispatcher;
 
         private GameSystemBuilder() {
-            players = new ArrayList<GenericPlayer>();
+            cardDispatcher = CardDeck.getInstance();
+            players = new ArrayList<Playable>();
         }
 
         public static GameBuilder newBuilder() {
             return new GameSystemBuilder();
         }
 
-        private void updatePlayers(GenericPlayer player) {
+        private void updatePlayers(Playable player) {
             players.add(0, player);
         }
 
@@ -60,20 +59,13 @@ public class GameSystem extends Observable {
         }
 
         @Override
-        public CardBuilder addPlayer(Player newPlayer) {
+        public SystemBuilder addPlayer(Player newPlayer) {
             updatePlayers(newPlayer);
             return this;
         }
 
         @Override
-        public SystemBuilder addCardDeck(CardDeck newCardDeck) {
-            cardDeck = newCardDeck;
-            return this;
-        }
-
-        @Override
         public GameSystem build() {
-            cardDispatcher = new CardDispatcher(cardDeck);
             return getInstance(this);
         }
     }
@@ -88,8 +80,8 @@ public class GameSystem extends Observable {
         final int minumumCardsNeed = players.size() * 2;
         if (cardDispatcher.hasEnoughCards(minumumCardsNeed)) {
             for (int i = 0; i < 2; i++) {
-                for (GenericPlayer player : players) {
-                    player.takeACard(cardDispatcher);
+                for (Playable player : players) {
+                    player.hit(cardDispatcher.dispatch());
                     DisplayInformation.preGame(player);
                 }
             }
@@ -98,7 +90,7 @@ public class GameSystem extends Observable {
     }
 
     private void midGame() {
-        for (GenericPlayer player : players) {
+        for (Playable player : players) {
             player.takeTurn(cardDispatcher);
             DisplayInformation.midGame(player);
         }
@@ -107,16 +99,8 @@ public class GameSystem extends Observable {
     private void afterGame() {
         final int dealerPoint = dealer.getPoint();
         players.remove(dealer);
-        for (GenericPlayer player : players) {
-            if (player.isBusted()) {
-                System.out.println(player + ", busted - result: Lose");
-            } else {
-                if (dealer.isBusted() || (player.getPoint() > dealerPoint)) {
-                    System.out.println(player + ", result: Win");
-                } else {
-                    System.out.println(player + ", result: Lose");
-                }
-            }
+        for (Playable player : players) {
+            DisplayInformation.afterGame(player, dealerPoint);
         }
     }
 }

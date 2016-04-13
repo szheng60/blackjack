@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.song.pointalgorithm.PointAlgFactory;
+
 public class CardHand implements Countable {
 
     private List<Card> hand;
     private boolean holdingAce = false;
+    private int point;
 
     public CardHand() {
         hand = new ArrayList<Card>();
@@ -23,6 +26,16 @@ public class CardHand implements Countable {
             holdingAce = true;
         }
         updateHand(newCard);
+        updatePoint();
+    }
+
+    private void updatePoint() {
+        final int point = PointAlgFactory.getFactory(this).calculate();
+        this.point = point;
+    }
+
+    public int getPoint() {
+        return point;
     }
 
     public String getCardDetail(int index) {
